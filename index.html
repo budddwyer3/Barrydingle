@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>One-Click Minimal</title>
+<style>
+  html,body{height:100%;margin:0;background:#000;overflow:hidden}
+  video{position:fixed;inset:0;width:100vw;height:100vh;object-fit:cover;}
+</style>
+</head>
+<body>
+  <video id="vid" playsinline preload="auto" muted>
+    <source src="doll.mp4" type="video/mp4">
+    Your browser does not support HTML5 video.
+  </video>
+
+<script>
+(function(){
+  const video = document.getElementById('vid');
+
+  // Try muted autoplay for visuals (may be blocked in rare cases)
+  video.play().catch(()=>{});
+
+  // First user gesture triggers unmute & play with sound and fullscreen
+  async function onFirstGesture(e) {
+    window.removeEventListener('click', onFirstGesture, true);
+    window.removeEventListener('touchstart', onFirstGesture, true);
+    window.removeEventListener('keydown', onFirstGesture, true);
+    try {
+      video.muted = false;
+      video.volume = 1.0;
+    } catch(e){}
+    try {
+      await video.play();
+    } catch(err){
+      // fallback: try muted play then unmute
+      try { video.muted = true; await video.play(); } catch(e2){}
+    }
+    // request fullscreen for immersion (allowed after user gesture)
+    try {
+      const el = document.documentElement;
+      if (el.requestFullscreen) await el.requestFullscreen();
+      else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+    } catch(fsErr){}
+
+    // remove any residual focus to avoid accidental controls
+    try { document.activeElement && document.activeElement.blur(); } catch(e){}
+  }
+
+  window.addEventListener('click', onFirstGesture, true);
+  window.addEventListener('touchstart', onFirstGesture, true);
+  window.addEventListener('keydown', onFirstGesture, true);
+})();
+</script>
+</body>
+</html>
